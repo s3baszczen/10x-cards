@@ -30,6 +30,8 @@ This table will be created and managed by supabase
 - **created_at**: TIMESTAMPTZ, NOT NULL, default CURRENT_TIMESTAMP.
 
 ### Generation Error Logs
+- **id**: UUID, primary key, default generated value (e.g. uuid_generate_v4()).
+- **user_id**: UUID, NOT NULL, foreign key referencing auth.users(id).
 - **model**: VARCHAR(255), NOT NULL.  -- Model name limited to 255 characters.
 - **source_text_hash**: VARCHAR(128), NOT NULL.  -- Hash length limited to 128 characters.
 - **source_text_length**: INTEGER, NOT NULL CHECK (source_text_length BETWEEN 1000 AND 10000).
@@ -41,7 +43,7 @@ This table will be created and managed by supabase
 
 - One-to-Many: One user can have many flashcards (flashcards.user_id references users(id)).
 - One-to-Many: One user can have many generations (generations.user_id references users(id)).
-- One-to-Many: One user can have many generation error logs.
+- One-to-Many: One user can have many generation error logs (generation_error_logs.user_id references users(id)).
 - Optional: One flashcard can reference one generation (flashcards.generation_id references generations(id)).
 
 ## 3. Indexes
@@ -61,6 +63,10 @@ This table will be created and managed by supabase
 - Create an index on generation_error_logs(source_text_hash) to improve query performance:
   ```sql
   CREATE INDEX idx_generation_error_logs_source_text_hash ON generation_error_logs(source_text_hash);
+  ```
+- Create an index on generation_error_logs(user_id) to improve read performance:
+  ```sql
+  CREATE INDEX idx_generation_error_logs_user_id ON generation_error_logs(user_id);
   ```
 - Primary key indexes are implicitly created on users(id), flashcards(id), and generations(id).
 

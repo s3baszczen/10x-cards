@@ -43,6 +43,7 @@ alter table public.flashcards
 -- Generation Error Logs table
 create table public.generation_error_logs (
     id uuid primary key default uuid_generate_v4(),
+    user_id uuid not null references auth.users(id) on delete cascade,
     model varchar(255) not null,
     source_text_hash varchar(128) not null,
     source_text_length integer not null check (source_text_length between 1000 and 10000),
@@ -58,6 +59,7 @@ create index idx_flashcards_user_id on public.flashcards(user_id);
 create index idx_flashcards_generation_id on public.flashcards(generation_id);
 create index idx_generations_user_id on public.generations(user_id);
 create index idx_generation_error_logs_source_text_hash on public.generation_error_logs(source_text_hash);
+create index idx_generation_error_logs_user_id on public.generation_error_logs(user_id);
 
 -- Enable Row Level Security
 alter table public.flashcards enable row level security;
@@ -114,18 +116,18 @@ create policy "Users can create their own generations"
 -- RLS Policies for generation_error_logs
 
 -- Select policy for authenticated users
-create policy "Users can view all error logs"
+create policy "Users can view their own error logs"
     on public.generation_error_logs
     for select
     to authenticated
-    using (true);
+    using (auth.uid() = user_id);
 
 -- Insert policy for authenticated users
-create policy "Users can create error logs"
+create policy "Users can create their own error logs"
     on public.generation_error_logs
     for insert
     to authenticated
-    with check (true);
+    with check (auth.uid() = user_id);
 
 -- Create updated_at trigger function
 create or replace function public.handle_updated_at()
