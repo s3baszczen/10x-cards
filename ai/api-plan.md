@@ -240,3 +240,4 @@
 - It is assumed that the front-end will handle user interactions (e.g., accepting or rejecting AI-generated flashcards) while the API provides CRUD and aggregation operations.
 - Spaced repetition logic in learning sessions might evolve into a dedicated service or endpoint in the future.
 - The API plan is constructed with scalability, security, and maintainability in mind, ensuring smooth integration with the rest of the application ecosystem.
+- 
