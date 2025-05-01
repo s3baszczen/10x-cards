@@ -23,46 +23,6 @@
 
 ## 2. Endpoints
 
-### Authentication Endpoints
-- **POST /api/auth/register**  
-  *Description*: Register a new user account.  
-  *Request Payload*:
-  ```json
-  {
-    "email": "user@example.com",
-    "password": "yourPassword123"
-  }
-  ```  
-  *Response*:
-    - 201 Created: Returns user info and authentication token.
-    - 400 Bad Request: Invalid email/password format.
-
-- **POST /api/auth/login**  
-  *Description*: Log in an existing user.  
-  *Request Payload*:
-  ```json
-  {
-    "email": "user@example.com",
-    "password": "yourPassword123"
-  }
-  ```  
-  *Response*:
-    - 200 OK: Returns an authentication token and user details.
-    - 401 Unauthorized: Incorrect credentials.
-
-- **POST /api/auth/logout**  
-  *Description*: Log out the current session.  
-  *Response*:
-    - 200 OK: Successful logout.
-
-- **GET /api/users/me**  
-  *Description*: Retrieve details of the currently authenticated user.  
-  *Response*:
-    - 200 OK: User details.
-    - 401 Unauthorized: Missing or invalid token.
-
----
-
 ### Flashcards Endpoints
 - **GET /api/flashcards**  
   *Description*: Retrieve a paginated list of flashcards for the authenticated user.  
@@ -92,7 +52,7 @@
   *Response*:
     - 201 Created: Returns the created flashcard.
     - 400 Bad Request: Validation error.
-- **PUT /api/flashcards/{id}**
+- **PUT /api/flashcards/{id}**  
   *Description*: Update an existing flashcard.  
   *Request Payload* (example):
   ```json
@@ -112,7 +72,7 @@
     - 200 OK: Deletion confirmation.
     - 404 Not Found: Flashcard does not exist or access is unauthorized.
 
-- **POST /api/flashcards/generate**  
+- **POST /api/generations**  
   *Description*: Generate flashcard suggestions using an AI model.  
   *Request Payload*:
   ```json
@@ -217,6 +177,5 @@
 ## 6. Assumptions and Additional Considerations
 - The API is designed to work with the following tech stack: Astro 5, React 19, TypeScript 5, Tailwind 4, Shadcn/ui, and Supabase as the backend.
 - It is assumed that the front-end will handle user interactions (e.g., accepting or rejecting AI-generated flashcards) while the API provides CRUD and aggregation operations.
-- Spaced repetition logic in learning sessions might evolve into a dedicated service or endpoint in the future.
 - The API plan is constructed with scalability, security, and maintainability in mind, ensuring smooth integration with the rest of the application ecosystem.
 - 
