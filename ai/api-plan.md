@@ -92,8 +92,7 @@
   *Response*:
     - 201 Created: Returns the created flashcard.
     - 400 Bad Request: Validation error.
-
-- **PUT /api/flashcards/{id}**  
+- **PUT /api/flashcards/{id}**
   *Description*: Update an existing flashcard.  
   *Request Payload* (example):
   ```json
@@ -163,25 +162,6 @@
 
 ---
 
-### Learning Session Endpoints (Optional)
-- **GET /api/learning/sessions**  
-  *Description*: Retrieve flashcards scheduled for a spaced repetition learning session.  
-  *Response*:
-    - 200 OK: List of flashcards for review.
-
-- **POST /api/learning/sessions/{card_id}/review**  
-  *Description*: Submit review feedback for a flashcard in a learning session (e.g., rating recall quality).  
-  *Request Payload*:
-  ```json
-  {
-    "rating": "numeric value representing user performance"
-  }
-  ```  
-  *Response*:
-    - 200 OK: Confirmation of review submission.
-
----
-
 ### Additional Endpoints
 - **GET /api/health**  
   *Description*: Health check endpoint to verify that the API is running.  
@@ -217,7 +197,6 @@
     - **Manual Creation**: Automatically sets the `creation` field to `"manual"`.
     - **Editing**: If a flashcard generated via AI is modified, it can be flagged as `"ai-edited"`.
     - **Listing and Pagination**: Support for pagination, filtering, and sorting to efficiently handle large data sets.
-    - **Learning Session**: (Optional) Integration with a spaced repetition algorithm for scheduling reviews.
 
 ---
 
