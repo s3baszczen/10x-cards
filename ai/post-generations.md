@@ -55,7 +55,6 @@ type FlashcardResponseDTO = {
 1. Autoryzacja poprzez Supabase Auth
 2. Walidacja długości tekstu źródłowego (min: 1000, max: 10000 znaków)
 3. Sanityzacja danych wejściowych
-4. Rate limiting dla zapobiegania nadużyciom
 5. Walidacja modelu AI (jeśli podany)
 
 ## 6. Obsługa błędów
