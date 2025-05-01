@@ -6,6 +6,8 @@ dist/
 
 # dependencies
 node_modules/
+.npm/
+.pnpm-store/
 
 # logs
 npm-debug.log*
@@ -16,9 +18,35 @@ pnpm-debug.log*
 # environment variables
 .env
 .env.production
+.env.local
+.env.development
 
 # macOS-specific files
 .DS_Store
 
 # jetbrains setting folder
 .idea/
+
+# TypeScript
+*.tsbuildinfo
+
+# Coverage directory
+coverage/
+
+# Supabase
+.supabase/
+
+# Docker
+docker-compose.override.yml
+
+# VSCode
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json
+
+# Temporary files
+*.log
+*.swp
+.DS_Store
+Thumbs.db
