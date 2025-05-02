@@ -3,8 +3,8 @@
 ## 1. Przegląd struktury UI
 
 Architektura UI 10x-cards została zaprojektowana z myślą o prostocie i efektywności, skupiając się na dwóch głównych ścieżkach użytkownika:
-- Zarządzanie fiszkami (tworzenie, edycja, generowanie AI)
-- Nauka 
+- Zarządzanie fiszkami (tworzenie manualne, generowanie przez AI, edycja, akceptacja, odrzucanie)
+- Prosta nauka (wyświetlanie pytania, odkrywanie odpowiedzi)
 
 Interfejs wykorzystuje system modułowy oparty na komponentach, z naciskiem na responsywność i dostępność. Główne interakcje są realizowane przez modalne interfejsy, co pozwala zachować kontekst i płynność działania.
 
@@ -22,13 +22,13 @@ Interfejs wykorzystuje system modułowy oparty na komponentach, z naciskiem na r
   - Sekcja przykładów
 
 ### Autoryzacja (/auth/login, /auth/register)
-- **Cel**: Bezpieczna autentykacja użytkownika
+- **Cel**: Bezpieczna autentykacja użytkownika przy pomocy Supabase Auth
 - **Kluczowe informacje**:
   - Formularze logowania/rejestracji
   - Komunikaty błędów
   - Linki do odzyskiwania hasła
 - **Komponenty**:
-  - AuthForm (współdzielony)
+  - AuthForm korzystający z Supabase Auth
   - Walidacja pól
   - System powiadomień
 - **Względy UX/Dostępność**:
@@ -52,7 +52,7 @@ Interfejs wykorzystuje system modułowy oparty na komponentach, z naciskiem na r
   - Skróty klawiszowe
   - Potwierdzenia usuwania
 
-### Generator AI (modal w /flashcards)
+### Generator AI (modal w /generate)
 - **Cel**: Generowanie fiszek z tekstu
 - **Kluczowe informacje**:
   - Pole wprowadzania tekstu
@@ -68,19 +68,19 @@ Interfejs wykorzystuje system modułowy oparty na komponentach, z naciskiem na r
   - Zachowanie stanu przy błędach
 
 ### Sesja nauki (/study)
-- **Cel**: Efektywna nauka z wykorzystaniem spaced repetition
+- **Cel**: Prosta nauka z wykorzystaniem wyświetlania pytania i odkrywania odpowiedzi
 - **Kluczowe informacje**:
-  - Aktualna fiszka
-  - Postęp sesji
-  - Przyciski oceny
+  - Aktualna fiszka (pytanie)
+  - Przycisk do odkrywania odpowiedzi
+  - Prosty mechanizm przechodzenia do kolejnej fiszki
 - **Komponenty**:
-  - StudyCard z animacją
-  - ProgressBar
-  - RatingButtons
+  - StudyCard z mechanizmem odkrywania odpowiedzi
+  - Przyciski nawigacji (następna, poprzednia)
+  - Wskaźnik postępu sesji nauki
 - **Względy UX/Dostępność**:
   - Obsługa gestów
   - Skróty klawiszowe
-  - Możliwość przerwania
+  - Możliwość przerwania sesji
 
 ## 3. Mapa podróży użytkownika
 
@@ -95,10 +95,10 @@ Interfejs wykorzystuje system modułowy oparty na komponentach, z naciskiem na r
 
 ### Ścieżka nauki:
 1. Wybór "Rozpocznij naukę" z listy fiszek
-2. Prezentacja pierwszej fiszki
-3. Interakcja (pokazanie odpowiedzi)
+2. Prezentacja pierwszej fiszki (pytanie)
+3. Odkrycie odpowiedzi przez użytkownika
 4. Przejście do kolejnej fiszki
-5. Zakończenie sesji i podsumowanie
+5. Zakończenie sesji po przeglądnięciu wszystkich fiszek
 
 ## 4. Układ i struktura nawigacji
 
@@ -136,9 +136,9 @@ Interfejs wykorzystuje system modułowy oparty na komponentach, z naciskiem na r
 
 ### StudySession
 - Interfejs sesji nauki
-- Animacje przejść
-- System oceny znajomości
-- Zarządzanie postępem
+- Mechanizm odkrywania odpowiedzi
+- Prosta nawigacja między fiszkami
+- Wskaźnik postępu sesji
 
 ### Toast
 - System powiadomień

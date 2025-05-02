@@ -18,13 +18,15 @@ Manualne tworzenie wysokiej jakości fiszek wymaga dużych nakładów czasu i wy
    - Opcje edycji i usuwania istniejących fiszek.
    - Ręczne tworzenie i wyświetlanie w ramach widoku listy "Moje fiszki"
 
-3. Podstawowy system uwierzytelniania i kont użytkowników:
-   - Rejestracja i logowanie.
+3. Uwierzytelnianie użytkowników poprzez Supabase Auth:
+   - Rejestracja i logowanie z wykorzystaniem Supabase Auth.
+   - Bezpieczne przechowywanie danych użytkownika.
    - Możliwość usunięcia konta i powiązanych fiszek na życzenie.
 
-4. Integracja z algorytmem powtórek:
-   - Zapewnienie mechanizmu przypisywania fiszek do harmonogramu powtórek (korzystanie z gotowego algorytmu).
-   - Brak dodatkowych metadanych i zaawansowanych funkcji powiadomień w MVP.
+4. Prosty mechanizm nauki:
+   - Możliwość przeglądania fiszek w formie pytanie -> odpowiedź.
+   - Prosty interfejs do wyświetlania pytania i odkrywania odpowiedzi.
+   - Podstawowa nawigacja między fiszkami (następna, poprzednia).
 
 5. Przechowywanie i skalowalność:
    - Dane o fiszkach i użytkownikach przechowywane w sposób zapewniający skalowalność i bezpieczeństwo.
@@ -50,20 +52,20 @@ Manualne tworzenie wysokiej jakości fiszek wymaga dużych nakładów czasu i wy
 ## 5. Historyjki użytkowników
 
 ID: US-001
-Tytuł: Rejestracja konta
-Opis: Jako nowy użytkownik chcę się zarejestrować, aby mieć dostęp do własnych fiszek i móc korzystać z generowania fiszek przez AI.
+Tytuł: Rejestracja konta poprzez Supabase Auth
+Opis: Jako nowy użytkownik chcę się zarejestrować przy pomocy Supabase Auth, aby mieć dostęp do własnych fiszek i móc korzystać z generowania fiszek przez AI.
 Kryteria akceptacji:
-- Formularz rejestracyjny zawiera pola na adres e-mail i hasło.
+- Formularz rejestracyjny integruje się z Supabase Auth i zawiera pola na adres e-mail i hasło.
 - Po poprawnym wypełnieniu formularza i weryfikacji danych konto jest aktywowane.
 - Użytkownik otrzymuje potwierdzenie pomyślnej rejestracji i zostaje zalogowany.
 
 ID: US-002
-Tytuł: Logowanie do aplikacji
-Opis: Jako zarejestrowany użytkownik chcę móc się zalogować, aby mieć dostęp do moich fiszek i historii generowania.
+Tytuł: Logowanie do aplikacji przez Supabase Auth
+Opis: Jako zarejestrowany użytkownik chcę móc się zalogować przy pomocy Supabase Auth, aby mieć dostęp do moich fiszek i historii generowania.
 Kryteria akceptacji:
 - Po podaniu prawidłowych danych logowania użytkownik zostaje przekierowany do widoku generowania fiszek.
 - Błędne dane logowania wyświetlają komunikat o nieprawidłowych danych.
-- Dane dotyczące logowania przechowywane są w bezpieczny sposób.
+- Dane dotyczące logowania przechowywane są w bezpieczny sposób przez Supabase Auth.
 
 ID: US-003
 Tytuł: Generowanie fiszek przy użyciu AI
@@ -107,13 +109,13 @@ Kryteria akceptacji:
 - Po zapisaniu nowa fiszka pojawia się na liście.
 
 ID: US-008
-Tytuł: Sesja nauki z algorytmem powtórek
-Opis: Jako zalogowany użytkownik chcę, aby dodane fiszki były dostępne w widoku "Sesja nauki" opartym na zewnętrznym algorytmie, aby móc efektywnie się uczyć (spaced repetition).
+Tytuł: Prosta sesja nauki
+Opis: Jako zalogowany użytkownik chcę, aby dodane fiszki były dostępne w prostym mechanizmie nauki, gdzie mogę przeglądać pytania i odpowiedzi.
 Kryteria akceptacji:
-- W widoku "Sesja nauki" algorytm przygotowuje dla mnie sesję nauki fiszek
-- Na start wyświetlany jest przód fiszki, poprzez interakcję użytkownik wyświetla jej tył
-- Użytkownik ocenia zgodnie z oczekiwaniami algorytmu na ile przyswoił fiszkę
-- Następnie algorytm pokazuje kolejną fiszkę w ramach sesji nauki
+- W widoku "Sesja nauki" wyświetlana jest pierwsza fiszka (pytanie)
+- Użytkownik ma możliwość odkrycia odpowiedzi
+- Użytkownik może przejść do kolejnej fiszki poprzez intuicyjną nawigację
+- Użytkownik widzi prosty wskaźnik postępu sesji
 
 ID: US-009
 Tytuł: Bezpieczny dostęp i autoryzacja

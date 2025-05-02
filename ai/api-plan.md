@@ -1,8 +1,8 @@
 # REST API Plan
 
 ## 1. Resources
-- **Users** (corresponds to the `Users` table):  
-  Contains user account details such as `id`, `email`, `hashed_password`, and timestamps. Managed by Supabase with RLS enabled.
+- **Users**:  
+  User authentication and management is handled by Supabase Auth. This includes registration, login, and account management.
 
 - **Flashcards** (corresponds to the `Flashcards` table):  
   Represents both manually created and AI-generated flashcards. Key fields include `id`, `user_id`, `front_text`, `back_text`, `creation` (with allowed values: `'ai'`, `'manual'`, `'ai-edited'`), `generation_id`, and a boolean `status`.
@@ -13,11 +13,8 @@
 - **Generation Error Logs** (corresponds to the `Generation Error Logs` table):  
   Stores error logs related to flashcard generation events. Important fields include `source_text_length` (validated between 1000 and 10000), `error_code`, and `error_message`.
 
-- **Authentication** (auxiliary resource):  
-  Even though user details are in the Users table, authentication endpoints are required for registration, login, and logout.
-
-- **Learning Session** (optional resource):  
-  This may be used for exposing flashcards that are scheduled for spaced repetition, based on user interactions.
+- **Learning Session**:  
+  A simple mechanism for displaying flashcards for study, where users can view questions and answers, with basic tracking of progress.
 
 ---
 
@@ -131,15 +128,15 @@
 ---
 
 ## 3. Authentication and Authorization
-- **Mechanism**: The API will use JWT (JSON Web Tokens) for authentication.
+- **Mechanism**: Authentication is managed through Supabase Auth, which provides JWT tokens.
 - **Implementation**:
-    - Upon logging in or registering, the API issues a JWT token.
-    - All protected endpoints must include the token in the HTTP Authorization header (e.g., `Authorization: Bearer <token>`).
-    - The database’s Row-Level Security (RLS) complements the token-based checks by ensuring users can only access their own data.
+    - Supabase Auth handles user registration, login, and session management.
+    - Protected endpoints use Supabase's Row-Level Security (RLS) policies to ensure users can only access their own data.
+    - Client-side authentication state is managed through Supabase Auth client.
 - **Security Measures**:
-    - Rate limiting middleware to prevent abuse.
     - HTTPS enforced in production.
     - Input validation to prevent injection attacks.
+    - Supabase's built-in security features for user authentication.
 
 ---
 
@@ -176,6 +173,8 @@
 
 ## 6. Assumptions and Additional Considerations
 - The API is designed to work with the following tech stack: Astro 5, React 19, TypeScript 5, Tailwind 4, Shadcn/ui, and Supabase as the backend.
+- Authentication is handled entirely by Supabase Auth for simplicity and security.
+- The learning mechanism is kept simple in the MVP - focusing on displaying flashcards with question/answer format without complex spaced repetition algorithms.
 - It is assumed that the front-end will handle user interactions (e.g., accepting or rejecting AI-generated flashcards) while the API provides CRUD and aggregation operations.
 - The API plan is constructed with scalability, security, and maintainability in mind, ensuring smooth integration with the rest of the application ecosystem.
 - 
