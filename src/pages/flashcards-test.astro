@@ -1,0 +1,21 @@
+---
+import Layout from '../layouts/Layout.astro';
+import FlashcardsView from '../components/flashcards/FlashcardsView';
+import TestDialog from '../components/TestDialog';
+---
+
+<Layout title="Test Fiszek" description="Testowa strona dla komponentu FlashcardsView">
+  <div class="container mx-auto py-8">
+    <h1 class="text-3xl font-bold mb-8">Test Komponentu FlashcardsView</h1>
+    
+    <div class="mb-12 p-4 border rounded-lg">
+      <h2 class="text-2xl font-bold mb-4">Dialog testowy (wiemy, że działa)</h2>
+      <TestDialog client:load />
+    </div>
+    
+    <div class="p-4 border rounded-lg">
+      <h2 class="text-2xl font-bold mb-4">Komponent FlashcardsView</h2>
+      <FlashcardsView client:load />
+    </div>
+  </div>
+</Layout>
