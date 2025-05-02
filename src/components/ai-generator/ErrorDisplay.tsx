@@ -10,10 +10,16 @@ interface ErrorDisplayProps {
 
 const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ error, onRetry }) => {
   // Extract error message
-  const errorMessage = error?.message || 'Wystąpił nieznany błąd podczas generowania fiszek.';
+  const errorMessage = 'message' in error 
+    ? error.message 
+    : 'Wystąpił nieznany błąd podczas generowania fiszek.';
   
   // Get more detailed error info if available
-  const detailedInfo = error?.details || error?.cause || null;
+  const detailedInfo = 'details' in error 
+    ? error.details 
+    : error instanceof Error 
+      ? error.cause 
+      : null;
   
   return (
     <div className="space-y-4">
@@ -22,9 +28,9 @@ const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ error, onRetry }) => {
         <AlertDescription>
           <p className="mt-1">{errorMessage}</p>
           
-          {detailedInfo && (
+          {detailedInfo !== null && typeof detailedInfo !== 'undefined' && (
             <div className="mt-3 p-2 bg-red-50 dark:bg-red-950 rounded-md text-sm font-mono overflow-x-auto">
-              {typeof detailedInfo === 'string' 
+              {typeof detailedInfo === 'string'
                 ? detailedInfo
                 : JSON.stringify(detailedInfo, null, 2)}
             </div>
