@@ -2,69 +2,124 @@ import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Sparkles, PlusIcon } from "lucide-react";
-import GeneratorModal from '../ai-generator/GeneratorModal';
 import type { FlashcardResponseDTO } from '@/types';
 import './flashcard.css';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+
+// Komponent pojedynczej fiszki
+const FlashcardItem: React.FC<{ flashcard: FlashcardResponseDTO }> = ({ flashcard }) => {
+  const [isFlipped, setIsFlipped] = useState(false);
+
+  return (
+    <div 
+      className={`flashcard-container ${isFlipped ? 'flipped' : ''}`} 
+      onClick={() => setIsFlipped(!isFlipped)}
+    >
+      <Card className="flashcard-card front">
+        <CardHeader>
+          <CardTitle>{flashcard.front_text}</CardTitle>
+          <CardDescription>
+            {flashcard.creation === 'ai' ? 'Wygenerowano przez AI' : 'Utworzono ręcznie'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          Kliknij, aby odwrócić
+        </CardContent>
+      </Card>
+      <Card className="flashcard-card back">
+        <CardHeader>
+          <CardTitle>Odpowiedź</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {flashcard.back_text}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
 
 const FlashcardsView: React.FC = () => {
+  console.log('FlashcardsView renderowany');
+  
   const [flashcards, setFlashcards] = useState<FlashcardResponseDTO[]>([]);
-  const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [textInput, setTextInput] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
+  // Ładowanie przykładowych fiszek
   useEffect(() => {
+    console.log('FlashcardsView useEffect - ładowanie fiszek');
+    setIsLoading(true);
+    
     // Symulacja ładowania danych
-    const loadFlashcards = async () => {
-      setIsLoading(true);
-      try {
-        // W rzeczywistej implementacji pobieralibyśmy dane z API
-        // Tutaj używamy przykładowych danych
-        setTimeout(() => {
-          setFlashcards([
-            {
-              id: '1',
-              front_text: 'Co to jest Astro?',
-              back_text: 'Astro to nowoczesny framework do budowania szybkich, opartych na treści stron internetowych z mniejszą ilością JavaScript po stronie klienta, używając "Islands Architecture".',
-              creation: 'ai',
-              generation_id: 'gen1',
-              status: true,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            },
-            {
-              id: '2',
-              front_text: 'Co to jest React?',
-              back_text: 'React to biblioteka JavaScript do budowania interfejsów użytkownika, która umożliwia tworzenie komponentów wielokrotnego użytku i efektywne aktualizowanie DOM za pomocą wirtualnego DOM.',
-              creation: 'ai',
-              generation_id: 'gen1',
-              status: true,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            },
-            {
-              id: '3',
-              front_text: 'Co to jest Tailwind CSS?',
-              back_text: 'Tailwind CSS to framework CSS typu utility-first, który pozwala szybko budować niestandardowe projekty bezpośrednio w znacznikach HTML poprzez stosowanie klas narzędziowych.',
-              creation: 'manual',
-              generation_id: 'gen2',
-              status: true,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            },
-          ]);
-          setIsLoading(false);
-        }, 1000);
-      } catch (error) {
-        console.error('Błąd podczas ładowania fiszek:', error);
-        setIsLoading(false);
-      }
-    };
-
-    loadFlashcards();
+    setTimeout(() => {
+      const exampleFlashcards: FlashcardResponseDTO[] = [
+        {
+          id: '1',
+          front_text: 'Co to jest Astro?',
+          back_text: 'Astro to nowoczesny framework do budowania szybkich, opartych na treści stron internetowych z mniejszą ilością JavaScript po stronie klienta, używając "Islands Architecture".',
+          creation: 'ai',
+          generation_id: 'gen1',
+          status: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        {
+          id: '2',
+          front_text: 'Co to jest React?',
+          back_text: 'React to biblioteka JavaScript do budowania interfejsów użytkownika, która umożliwia tworzenie komponentów wielokrotnego użytku i efektywne aktualizowanie DOM za pomocą wirtualnego DOM.',
+          creation: 'ai',
+          generation_id: 'gen1',
+          status: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        {
+          id: '3',
+          front_text: 'Co to jest Tailwind CSS?',
+          back_text: 'Tailwind CSS to framework CSS typu utility-first, który pozwala szybko budować niestandardowe projekty bezpośrednio w znacznikach HTML poprzez stosowanie klas narzędziowych.',
+          creation: 'manual',
+          generation_id: 'gen2',
+          status: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      ];
+      
+      console.log('Załadowano przykładowe fiszki', exampleFlashcards);
+      setFlashcards(exampleFlashcards);
+      setIsLoading(false);
+    }, 1000);
   }, []);
 
-  const handleNewFlashcards = (newCards: FlashcardResponseDTO[]) => {
-    setFlashcards(prev => [...newCards, ...prev]);
-    setIsGeneratorOpen(false);
+  // Obsługa generowania nowych fiszek
+  const handleGenerateFlashcards = () => {
+    console.log('Generowanie fiszek z tekstu:', textInput);
+    
+    if (!textInput.trim()) {
+      alert('Wprowadź tekst, aby wygenerować fiszki!');
+      return;
+    }
+    
+    // Przykładowa nowa fiszka
+    const newFlashcard: FlashcardResponseDTO = {
+      id: `new-${Date.now()}`,
+      front_text: `Pytanie wygenerowane z: ${textInput.substring(0, 20)}...`,
+      back_text: `Odpowiedź wygenerowana dla tekstu: ${textInput.substring(0, 30)}...`,
+      creation: 'ai',
+      generation_id: `gen-${Date.now()}`,
+      status: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    
+    // Dodanie nowej fiszki na początek listy
+    setFlashcards(prev => [newFlashcard, ...prev]);
+    
+    // Zamknięcie dialogu
+    setDialogOpen(false);
+    setTextInput('');
   };
 
   return (
@@ -72,18 +127,25 @@ const FlashcardsView: React.FC = () => {
       <div className="flex gap-4 mb-6">
         <Button 
           variant="outline" 
-          onClick={() => setIsGeneratorOpen(true)}
+          onClick={() => {
+            console.log('Kliknięto przycisk "Generuj z AI"');
+            setDialogOpen(true);
+          }}
           className="flex items-center gap-2"
         >
           <Sparkles className="w-4 h-4" />
           Generuj z AI
         </Button>
         <Button 
-          variant="default" 
+          variant="default"
+          onClick={() => {
+            console.log('Kliknięto przycisk "Testowy alert"');
+            alert('Test - ten przycisk działa!');
+          }}
           className="flex items-center gap-2"
         >
           <PlusIcon className="w-4 h-4" />
-          Dodaj fiszkę
+          Testowy alert
         </Button>
       </div>
 
@@ -116,7 +178,7 @@ const FlashcardsView: React.FC = () => {
           <div className="flex justify-center gap-4">
             <Button 
               variant="default" 
-              onClick={() => setIsGeneratorOpen(true)}
+              onClick={() => setDialogOpen(true)}
               className="flex items-center gap-2"
             >
               <Sparkles className="w-4 h-4" />
@@ -130,67 +192,36 @@ const FlashcardsView: React.FC = () => {
         </div>
       )}
 
-      <GeneratorModal 
-        isOpen={isGeneratorOpen} 
-        onOpenChange={setIsGeneratorOpen} 
-      />
-    </div>
-  );
-};
-
-interface FlashcardItemProps {
-  flashcard: FlashcardResponseDTO;
-}
-
-const FlashcardItem: React.FC<FlashcardItemProps> = ({ flashcard }) => {
-  const [flipped, setFlipped] = useState(false);
-
-  return (
-    <div 
-      className="h-64 perspective-1000 cursor-pointer" 
-      onClick={() => setFlipped(!flipped)}
-    >
-      <div 
-        className={`relative w-full h-full transition-transform duration-500 transform-style-3d ${
-          flipped ? 'rotate-y-180' : ''
-        }`}
-      >
-        {/* Front Side */}
-        <Card className={`absolute w-full h-full backface-hidden ${
-          flipped ? 'opacity-0 pointer-events-none' : 'opacity-100'
-        }`}>
-          <CardHeader>
-            <CardTitle className="line-clamp-2">{flashcard.front_text}</CardTitle>
-            <CardDescription>
-              {flashcard.creation === 'ai' ? (
-                <span className="flex items-center text-xs">
-                  <Sparkles className="w-3 h-3 mr-1 text-blue-500" />
-                  Wygenerowano przez AI
-                </span>
-              ) : (
-                <span className="text-xs">Stworzone ręcznie</span>
-              )}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="mt-4 text-sm text-muted-foreground flex items-center justify-center h-20">
-              <span>Kliknij, aby zobaczyć odpowiedź</span>
+      {/* Dialog bezpośrednio w komponencie zamiast importowanego GeneratorModal */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Generator Fiszek AI</DialogTitle>
+          </DialogHeader>
+          <div className="p-4 space-y-4">
+            <p>Wprowadź tekst źródłowy, z którego chcesz wygenerować fiszki:</p>
+            
+            <Textarea 
+              value={textInput}
+              onChange={(e) => {
+                console.log('Zmiana wartości textarea:', e.target.value);
+                setTextInput(e.target.value);
+              }}
+              className="min-h-[200px]" 
+              placeholder="Wprowadź tekst, z którego chcesz wygenerować fiszki..."
+            />
+            
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                Anuluj
+              </Button>
+              <Button onClick={handleGenerateFlashcards}>
+                Generuj fiszki
+              </Button>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Back Side */}
-        <Card className={`absolute w-full h-full backface-hidden rotate-y-180 ${
-          flipped ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}>
-          <CardHeader>
-            <CardTitle className="text-sm text-muted-foreground">Odpowiedź</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="line-clamp-6">{flashcard.back_text}</p>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

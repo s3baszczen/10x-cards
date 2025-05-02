@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro'
 import { z } from 'zod'
 import { generationsService } from '@/lib/services/generations.service'
-import { VALIDATION_CONSTANTS } from '@/lib/constants/validation'
+import { VALIDATION_CONSTANTS } from '@/types'
 
 export const prerender = false
 

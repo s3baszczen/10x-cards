@@ -29,6 +29,7 @@ const AIGeneratorContainer: React.FC<AIGeneratorContainerProps> = ({
   onClose,
   onFlashcardsGenerated
 }) => {
+  console.log('AIGeneratorContainer renderowany', { isModal, hasOnClose: !!onClose, hasOnFlashcardsGenerated: !!onFlashcardsGenerated });
   const [sourceText, setSourceText] = useState('');
   const [generatorState, setGeneratorState] = useState<GeneratorState>({ status: 'idle' });
   const [selectedModel, setSelectedModel] = useState<string>('gpt-4');
@@ -56,17 +57,21 @@ const AIGeneratorContainer: React.FC<AIGeneratorContainerProps> = ({
 
   const handleGenerateFlashcards = async () => {
     try {
+      console.log('Rozpoczynam generowanie fiszek', { sourceText, selectedModel });
       setGeneratorState({ status: 'generating' });
 
       // Symulacja opóźnienia dla UX
       await new Promise(resolve => setTimeout(resolve, 1000));
 
+      console.log('Wysyłam zapytanie do API');
       setGeneratorState({ status: 'loading' });
 
       const command: GenerateFlashcardsCommand = {
         source_text: sourceText,
         model: selectedModel,
       };
+
+      console.log('Command:', command);
 
       const response = await fetch('/api/generations', {
         method: 'POST',
@@ -76,17 +81,21 @@ const AIGeneratorContainer: React.FC<AIGeneratorContainerProps> = ({
         body: JSON.stringify(command),
       });
 
+      console.log('Odpowiedź API:', { status: response.status, ok: response.ok });
+
       if (!response.ok) {
         let errorData = { message: 'Unknown error' };
         try {
           errorData = await response.json();
+          console.error('Błąd API:', errorData);
         } catch (e) {
-          // Ignoruj błąd parsowania JSON
+          console.error('Nie można sparsować odpowiedzi błędu:', e);
         }
         throw new Error(errorData.message || 'Failed to generate flashcards');
       }
 
       const data: GenerateFlashcardsResponseDTO = await response.json();
+      console.log('Dane z API:', data);
 
       // Initialize proposal states for all generated flashcards
       const initialProposalStates: FlashcardProposalState = {};
@@ -163,17 +172,20 @@ const AIGeneratorContainer: React.FC<AIGeneratorContainerProps> = ({
             <SourceTextInput
               value={sourceText}
               onChange={handleSourceTextChange}
-              minLength={VALIDATION_CONSTANTS.SOURCE_TEXT_MIN_LENGTH}
-              maxLength={VALIDATION_CONSTANTS.SOURCE_TEXT_MAX_LENGTH}
+              isValid={sourceText.length >= VALIDATION_CONSTANTS.SOURCE_TEXT_MIN_LENGTH}
+              errorMessage={sourceText.length > 0 && sourceText.length < VALIDATION_CONSTANTS.SOURCE_TEXT_MIN_LENGTH 
+                ? `Text must be at least ${VALIDATION_CONSTANTS.SOURCE_TEXT_MIN_LENGTH} characters long` 
+                : undefined}
+              isDisabled={generatorState.status !== 'idle'}
             />
           </div>
           <GeneratorControls
             onGenerate={handleGenerateFlashcards}
             onCancel={handleCancelGeneration}
-            onModelChange={handleModelChange}
+            isGenerating={generatorState.status === 'generating' || generatorState.status === 'loading'}
+            isValid={sourceText.length >= VALIDATION_CONSTANTS.SOURCE_TEXT_MIN_LENGTH}
             selectedModel={selectedModel}
-            isGenerateDisabled={sourceText.length < VALIDATION_CONSTANTS.SOURCE_TEXT_MIN_LENGTH}
-            isCancelButtonVisible={isModal}
+            onModelChange={handleModelChange}
           />
         </>
       )}

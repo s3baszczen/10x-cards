@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { FlashcardResponseDTO } from '../../types';
+import type {FlashcardResponseDTO} from '../../types';
 
 interface FlashcardProposalProps {
   proposal: FlashcardResponseDTO;

@@ -29,6 +29,8 @@ const GeneratorControls: React.FC<GeneratorControlsProps> = ({
 }) => {
   const availableModels = models || ['gpt-4', 'gpt-3.5-turbo'];
   
+  console.log('GeneratorControls props:', { isGenerating, isValid, selectedModel });
+  
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-center">
       {/* Model selector */}
@@ -67,7 +69,11 @@ const GeneratorControls: React.FC<GeneratorControlsProps> = ({
           </>
         ) : (
           <Button 
-            onClick={onGenerate} 
+            onClick={(e) => {
+              console.log('Kliknięto przycisk Generuj fiszki');
+              e.preventDefault();
+              onGenerate();
+            }} 
             disabled={!isValid}
             className="flex-1"
             aria-label="Generuj fiszki"
