@@ -40,8 +40,6 @@ const FlashcardItem: React.FC<{ flashcard: FlashcardResponseDTO }> = ({ flashcar
 };
 
 const FlashcardsView: React.FC = () => {
-  console.log('FlashcardsView renderowany');
-  
   const [flashcards, setFlashcards] = useState<FlashcardResponseDTO[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [textInput, setTextInput] = useState('');
@@ -49,7 +47,6 @@ const FlashcardsView: React.FC = () => {
 
   // Ładowanie przykładowych fiszek
   useEffect(() => {
-    console.log('FlashcardsView useEffect - ładowanie fiszek');
     setIsLoading(true);
     
     // Symulacja ładowania danych
@@ -87,7 +84,6 @@ const FlashcardsView: React.FC = () => {
         },
       ];
       
-      console.log('Załadowano przykładowe fiszki', exampleFlashcards);
       setFlashcards(exampleFlashcards);
       setIsLoading(false);
     }, 1000);
@@ -95,8 +91,6 @@ const FlashcardsView: React.FC = () => {
 
   // Obsługa generowania nowych fiszek
   const handleGenerateFlashcards = () => {
-    console.log('Generowanie fiszek z tekstu:', textInput);
-    
     if (!textInput.trim()) {
       alert('Wprowadź tekst, aby wygenerować fiszki!');
       return;
@@ -127,10 +121,7 @@ const FlashcardsView: React.FC = () => {
       <div className="flex gap-4 mb-6">
         <Button 
           variant="outline" 
-          onClick={() => {
-            console.log('Kliknięto przycisk "Generuj z AI"');
-            setDialogOpen(true);
-          }}
+          onClick={() => setDialogOpen(true)}
           className="flex items-center gap-2"
         >
           <Sparkles className="w-4 h-4" />
@@ -138,14 +129,10 @@ const FlashcardsView: React.FC = () => {
         </Button>
         <Button 
           variant="default"
-          onClick={() => {
-            console.log('Kliknięto przycisk "Testowy alert"');
-            alert('Test - ten przycisk działa!');
-          }}
           className="flex items-center gap-2"
         >
           <PlusIcon className="w-4 h-4" />
-          Testowy alert
+          Dodaj fiszkę
         </Button>
       </div>
 
@@ -192,7 +179,7 @@ const FlashcardsView: React.FC = () => {
         </div>
       )}
 
-      {/* Dialog bezpośrednio w komponencie zamiast importowanego GeneratorModal */}
+      {/* Dialog do generowania fiszek */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
@@ -203,10 +190,7 @@ const FlashcardsView: React.FC = () => {
             
             <Textarea 
               value={textInput}
-              onChange={(e) => {
-                console.log('Zmiana wartości textarea:', e.target.value);
-                setTextInput(e.target.value);
-              }}
+              onChange={(e) => setTextInput(e.target.value)}
               className="min-h-[200px]" 
               placeholder="Wprowadź tekst, z którego chcesz wygenerować fiszki..."
             />
