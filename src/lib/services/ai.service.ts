@@ -44,22 +44,9 @@ export class AIService {
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user', content: userPrompt }
       ],
-      model,
-      response_format: {
-        type: 'json_object',
-        schema: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              front_text: { type: 'string', maxLength: VALIDATION_CONSTANTS.FLASHCARD_TEXT_MAX_LENGTH },
-              back_text: { type: 'string', maxLength: VALIDATION_CONSTANTS.FLASHCARD_TEXT_MAX_LENGTH }
-            },
-            required: ['front_text', 'back_text']
-          }
-        }
-      }
     })
+
+    console.log('AI response:', response)
 
     // Validate response structure
     if (!response?.choices?.[0]?.message?.content || !Array.isArray(response.choices[0].message.content)) {
