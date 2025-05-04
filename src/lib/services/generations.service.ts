@@ -79,7 +79,8 @@ export class GenerationsService {
             back_text: flashcard.back_text,
             generation_id: generationId,
             status: true,
-            user_id: user.id
+            user_id: user.id,
+            creation: 'ai'
           }))
         )
         .select();
