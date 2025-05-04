@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/db/database.types'
-import type { CreateFlashcardDTO, FlashcardResponseDTO } from '@/types'
+import type { CreateFlashcardDTO, FlashcardResponseDTO, FlashcardListRequestDTO, FlashcardListResponseDTO } from '@/types'
 import { aiService } from './ai.service'
 import { errorLoggingService } from './error-logging.service'
 
@@ -134,6 +134,58 @@ export class GenerationsService {
         stack_trace: error instanceof Error ? error.stack : undefined,
       })
       throw error
+    }
+  }
+
+  async getFlashcards({
+    page = 1,
+    limit = 10,
+    creation,
+    status,
+    sortBy = 'created_at',
+    sortOrder = 'desc',
+  }: FlashcardListRequestDTO): Promise<FlashcardListResponseDTO> {
+    try {
+      const { data: { user } } = await this.supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const from = (page - 1) * limit;
+      const to = from + limit - 1;
+
+      let query = this.supabase
+        .from('flashcards')
+        .select('*', { count: 'exact' })
+        .eq('user_id', user.id)
+        .order(sortBy, { ascending: sortOrder === 'asc' })
+        .range(from, to);
+
+      if (creation) {
+        query = query.eq('creation', creation);
+      }
+
+      if (status !== undefined) {
+        query = query.eq('status', status);
+      }
+
+      const { data, error, count } = await query;
+
+      if (error) throw error;
+      if (!data) throw new Error('No data returned from flashcards query');
+
+      return {
+        items: data,
+        total: count || 0,
+        page,
+        limit,
+        has_more: count ? from + limit < count : false,
+      };
+    } catch (error) {
+      await this.errorLogger.logError({
+        error_code: 'FLASHCARD_FETCH_ERROR',
+        error_message: error instanceof Error ? error.message : 'Unknown error',
+        stack_trace: error instanceof Error ? error.stack : undefined,
+      });
+      throw error;
     }
   }
 }
