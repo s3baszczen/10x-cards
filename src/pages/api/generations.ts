@@ -35,13 +35,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Generate flashcards using AI
     const generatedFlashcards = await service.generateFlashcards(source_text, model)
 
-    // Save flashcards
-    const savedFlashcards = await service.saveFlashcards(generatedFlashcards, generation.id)
-
     return new Response(
       JSON.stringify({
         generation_id: generation.id,
-        flashcards: savedFlashcards,
+        flashcards: generatedFlashcards,
       }),
       {
         status: 200,

@@ -27,8 +27,6 @@ export interface FlashcardProposal {
 export interface FlashcardToSave {
   front_text: string;
   back_text: string;
-  creation: 'ai' | 'ai-edited';
-  generation_id: string;
 }
 
 export function useGeneratorState() {
@@ -93,6 +91,8 @@ export function useGeneratorState() {
         source_text: state.sourceText
       };
 
+      console.log('Sending generation request with payload:', payload);
+
       // Call API to generate flashcards
       const response = await fetch('/api/generations', {
         method: 'POST',
@@ -102,17 +102,18 @@ export function useGeneratorState() {
         body: JSON.stringify(payload)
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate flashcards');
+        console.error('Error response from API:', data);
+        throw new Error(data.error?.message || data.error || 'Failed to generate flashcards');
       }
 
-      // Parse response
-      const data: GenerateFlashcardsResponseDTO = await response.json();
+      console.log('Received generation response:', data);
 
       // Map API response to proposal format
-      const proposals: FlashcardProposal[] = data.flashcards.map(card => ({
-        id: card.id,
+      const proposals: FlashcardProposal[] = data.flashcards.map((card: any, index: number) => ({
+        id: String(index), // Generate temporary IDs since we don't have real ones yet
         frontText: card.front_text,
         backText: card.back_text,
         status: 'pending'
@@ -177,6 +178,7 @@ export function useGeneratorState() {
   // Save accepted flashcards
   const saveAcceptedFlashcards = useCallback(async () => {
     if (!state.generationId) {
+      console.error('Missing generation ID');
       setState(prev => ({
         ...prev,
         error: 'Missing generation ID'
@@ -185,8 +187,10 @@ export function useGeneratorState() {
     }
 
     const acceptedProposals = state.proposals.filter(p => p.status === 'accepted');
+    console.log('Accepted proposals:', acceptedProposals);
     
     if (acceptedProposals.length === 0) {
+      console.error('No accepted flashcards to save');
       setState(prev => ({
         ...prev,
         error: 'Please accept at least one flashcard before saving'
@@ -204,27 +208,34 @@ export function useGeneratorState() {
       // Map accepted proposals to DTO format
       const flashcardsToSave = acceptedProposals.map(proposal => ({
         front_text: proposal.frontText,
-        back_text: proposal.backText,
-        creation: proposal.isEditing ? 'ai-edited' : 'ai',
-        generation_id: state.generationId!
+        back_text: proposal.backText
       }));
 
+      console.log('Sending save request with payload:', {
+        flashcards: flashcardsToSave,
+        generation_id: state.generationId
+      });
+
       // Call API to save flashcards
-      const response = await fetch('/api/generations', {
+      const response = await fetch('/api/flashcards', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ 
-          source_text: state.sourceText,
-          flashcards: flashcardsToSave 
+          flashcards: flashcardsToSave,
+          generation_id: state.generationId
         })
       });
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('Error response from API:', errorData);
         throw new Error(errorData.message || errorData.error || 'Failed to save flashcards');
       }
+
+      const savedData = await response.json();
+      console.log('Successfully saved flashcards:', savedData);
 
       // Redirect to flashcards page after successful save
       window.location.href = '/flashcards';

@@ -66,10 +66,47 @@ export class GenerationsService {
     }
   }
 
-  async saveFlashcards(flashcards: CreateFlashcardDTO[], generationId: string): Promise<FlashcardResponseDTO[]> {
+  async saveFlashcard(flashcard: CreateFlashcardDTO, generationId: string): Promise<FlashcardResponseDTO> {
     try {
       const { data: { user } } = await this.supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await this.supabase
+        .from('flashcards')
+        .insert({
+          front_text: flashcard.front_text,
+          back_text: flashcard.back_text,
+          generation_id: generationId,
+          status: true,
+          user_id: user.id,
+          creation: 'ai'
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      if (!data) throw new Error('No data returned from flashcard creation');
+
+      return data;
+    } catch (error) {
+      await this.errorLogger.logError({
+        error_code: 'FLASHCARD_SAVE_ERROR',
+        error_message: error instanceof Error ? error.message : 'Unknown error',
+        generation_id: generationId,
+        stack_trace: error instanceof Error ? error.stack : undefined,
+      })
+      throw error
+    }
+  }
+
+  async saveAcceptedFlashcards(flashcards: CreateFlashcardDTO[], generationId: string): Promise<FlashcardResponseDTO[]> {
+    try {
+      const { data: { user } } = await this.supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      if (flashcards.length === 0) {
+        return [];
+      }
 
       const { data, error } = await this.supabase
         .from('flashcards')
@@ -91,7 +128,7 @@ export class GenerationsService {
       return data;
     } catch (error) {
       await this.errorLogger.logError({
-        error_code: 'FLASHCARD_SAVE_ERROR',
+        error_code: 'FLASHCARDS_SAVE_ERROR',
         error_message: error instanceof Error ? error.message : 'Unknown error',
         generation_id: generationId,
         stack_trace: error instanceof Error ? error.stack : undefined,
