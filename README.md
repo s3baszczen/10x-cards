@@ -20,6 +20,12 @@
 - React 19
 - Tailwind CSS 4
 - Shadcn/ui
+- Testing Tools:
+  - Vitest/Jest (Unit & Integration Tests)
+  - React Testing Library (Component Testing)
+  - Playwright (E2E Testing)
+  - MSW (API Mocking)
+  - Supertest (API Testing)
 
 ## Getting Started Locally
 To set up the project locally, follow these steps:
@@ -49,6 +55,8 @@ In the project directory, you can run:
 - `npm run build` - Builds the app for production.
 - `npm run preview` - Serves the built app for preview.
 - `npm run lint` - Runs the linter on the codebase.
+- `npm run test` - Runs unit and integration tests.
+- `npm run test:e2e` - Runs end-to-end tests with Playwright.
 
 ## Project Scope
 The scope of the project includes:
@@ -56,8 +64,7 @@ The scope of the project includes:
 - Implementation of dynamic content rendering with React and Astro.
 - Use of modern styling with Tailwind CSS and Shadcn/ui for a polished design.
 - A modular and scalable project structure to facilitate future development.
+- Comprehensive testing suite with unit, integration, and E2E tests.
 
 ## Project Status
 This project is currently under active development. Future improvements will focus on feature enhancements, performance optimization, and additional testing.
-
-
