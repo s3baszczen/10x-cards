@@ -68,6 +68,9 @@ export class GenerationsService {
 
   async saveFlashcards(flashcards: CreateFlashcardDTO[], generationId: string): Promise<FlashcardResponseDTO[]> {
     try {
+      const { data: { user } } = await this.supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
       const { data, error } = await this.supabase
         .from('flashcards')
         .insert(
@@ -76,6 +79,7 @@ export class GenerationsService {
             back_text: flashcard.back_text,
             generation_id: generationId,
             status: true,
+            user_id: user.id
           }))
         )
         .select();
