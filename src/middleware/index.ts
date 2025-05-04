@@ -72,8 +72,23 @@ export const onRequest = defineMiddleware(async (context, next) => {
     });
 
     if (!session) {
-      console.log('⚠️ No session found, redirecting to login');
-      // Store the intended destination
+      console.log('⚠️ No session found');
+      
+      // For API routes, return JSON error instead of redirecting
+      if (pathname.startsWith('/api/')) {
+        return new Response(JSON.stringify({ 
+          error: 'Unauthorized',
+          message: 'Session expired or invalid'
+        }), {
+          status: 401,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+      
+      // For regular routes, redirect to login
+      console.log('⚠️ Redirecting to login');
       context.cookies.set('redirectTo', pathname, { 
         path: '/',
         secure: true,

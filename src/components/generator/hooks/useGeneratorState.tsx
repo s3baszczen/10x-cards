@@ -210,17 +210,20 @@ export function useGeneratorState() {
       }));
 
       // Call API to save flashcards
-      const response = await fetch('/api/flashcards', {
+      const response = await fetch('/api/generations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ flashcards: flashcardsToSave })
+        body: JSON.stringify({ 
+          source_text: state.sourceText,
+          flashcards: flashcardsToSave 
+        })
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save flashcards');
+        throw new Error(errorData.message || errorData.error || 'Failed to save flashcards');
       }
 
       // Redirect to flashcards page after successful save
