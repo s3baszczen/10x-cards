@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { ToastProvider } from "../components/ui/toaster";
 
 interface Props {
   title?: string;
@@ -19,6 +20,7 @@ const { title = "10x Astro Starter" } = Astro.props;
   </head>
   <body>
     <slot />
+    <ToastProvider client:load />
   </body>
 </html>
 
