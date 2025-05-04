@@ -5,6 +5,8 @@ import { z } from 'zod';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
+import { supabaseClient } from '@/db/supabase.client';
+import { toast } from 'sonner';
 
 const registerSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -33,13 +35,45 @@ const RegisterForm: React.FC = () => {
   });
 
   const onSubmit = async (data: RegisterFormValues) => {
-    // Will be implemented later
-    console.log(data);
+    try {
+      console.log('Registration started');
+      const { error } = await supabaseClient.auth.signUp({
+        email: data.email,
+        password: data.password,
+      });
+
+      if (error) {
+        console.error('Registration error:', error);
+        toast.error('Registration failed', {
+          description: error.message
+        });
+        return;
+      }
+
+      console.log('Registration successful');
+      toast.success('Registration successful', {
+        description: 'Please check your email to confirm your account.'
+      });
+      
+      // Optionally redirect to login page
+      window.location.href = '/auth/login';
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast.error('Registration failed', {
+        description: 'An unexpected error occurred. Please try again.'
+      });
+    }
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    console.log('Form submission started');
+    e.preventDefault();
+    form.handleSubmit(onSubmit)(e);
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleFormSubmit} className="space-y-6">
         <FormField
           control={form.control}
           name="email"

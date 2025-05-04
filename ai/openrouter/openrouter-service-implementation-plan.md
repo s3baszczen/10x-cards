@@ -530,7 +530,7 @@ I zaktualizuj plik `src/env.d.ts`, aby uwzględnić nową zmienną:
 ```typescript
 interface ImportMetaEnv {
   readonly PUBLIC_SUPABASE_URL: string
-  readonly PUBLIC_SUPABASE_ANON_KEY: string
+  readonly PUBLIC_SUPABASE_KEY: string
   readonly OPENROUTER_API_KEY: string
 }
 
