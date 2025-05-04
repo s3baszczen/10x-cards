@@ -3,6 +3,9 @@ import type { FlashcardResponseDTO, FlashcardListResponseDTO } from '@/types';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { PencilIcon, CheckIcon, XIcon } from 'lucide-react';
+import { toast } from 'sonner';
+import FlashcardPreview from '../generator/FlashcardPreview';
 
 interface FlashcardListProps {
   initialPage?: number;
@@ -18,6 +21,8 @@ const FlashcardList: React.FC<FlashcardListProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(initialPage);
   const [hasMore, setHasMore] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editedValues, setEditedValues] = useState<{ front_text?: string; back_text?: string }>({});
 
   const fetchFlashcards = async () => {
     try {
@@ -47,60 +52,118 @@ const FlashcardList: React.FC<FlashcardListProps> = ({
     }
   };
 
-  useEffect(() => {
-    fetchFlashcards();
-  }, [page]);
+  const handleEdit = (id: string) => {
+    setEditingId(id);
+    setEditedValues({});
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditedValues({});
+  };
+
+  const handleSaveEdit = async (id: string) => {
+    if (Object.keys(editedValues).length === 0) {
+      handleCancelEdit();
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/flashcards', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id,
+          ...editedValues,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update flashcard');
+      }
+
+      const updatedFlashcard = await response.json();
+      setFlashcards(prevFlashcards =>
+        prevFlashcards.map(card =>
+          card.id === id ? { ...card, ...updatedFlashcard } : card
+        )
+      );
+      toast.success('Flashcard updated successfully');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update flashcard');
+    } finally {
+      handleCancelEdit();
+    }
+  };
+
+  const handleFieldEdit = (field: 'front' | 'back', value: string) => {
+    setEditedValues(prev => ({
+      ...prev,
+      [`${field}_text`]: value,
+    }));
+  };
 
   const loadMore = () => {
     setPage(prev => prev + 1);
   };
 
-  if (error) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-red-500 mb-4">{error}</p>
-        <Button onClick={() => fetchFlashcards()} variant="outline">
-          Try Again
-        </Button>
-      </div>
-    );
-  }
+  useEffect(() => {
+    fetchFlashcards();
+  }, [page]);
 
   return (
-    <div className="space-y-6">
-      {flashcards.map(flashcard => (
-        <Card key={flashcard.id}>
-          <CardHeader>
-            <div className="text-sm text-muted-foreground">
-              Created: {new Date(flashcard.created_at).toLocaleDateString()}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="front">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="front">Front</TabsTrigger>
-                <TabsTrigger value="back">Back</TabsTrigger>
-              </TabsList>
-              <TabsContent value="front" className="min-h-[100px] mt-4">
-                <div className="p-4 bg-muted rounded-md">
-                  {flashcard.front_text}
-                </div>
-              </TabsContent>
-              <TabsContent value="back" className="min-h-[100px] mt-4">
-                <div className="p-4 bg-muted rounded-md">
-                  {flashcard.back_text}
-                </div>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-      ))}
-
-      {loading && (
-        <div className="text-center py-4">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+    <div className="space-y-4">
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <span className="block sm:inline">{error}</span>
         </div>
       )}
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {flashcards.map(flashcard => (
+          <div key={flashcard.id} className="relative">
+            <FlashcardPreview
+              frontText={flashcard.front_text}
+              backText={flashcard.back_text}
+              isEditable={editingId === flashcard.id}
+              onEdit={handleFieldEdit}
+            />
+            <div className="absolute top-2 right-2 flex gap-2">
+              {editingId === flashcard.id ? (
+                <>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => handleSaveEdit(flashcard.id)}
+                    className="h-8 w-8 bg-white/90 hover:bg-white"
+                  >
+                    <CheckIcon className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={handleCancelEdit}
+                    className="h-8 w-8 bg-white/90 hover:bg-white"
+                  >
+                    <XIcon className="h-4 w-4" />
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => handleEdit(flashcard.id)}
+                  className="h-8 w-8 bg-white/90 hover:bg-white"
+                >
+                  <PencilIcon className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
 
       {!loading && hasMore && (
         <div className="text-center py-4">

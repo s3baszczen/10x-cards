@@ -21,6 +21,20 @@ const saveAcceptedFlashcardsSchema = z.object({
   generation_id: z.string().uuid('Invalid generation ID'),
 })
 
+const updateFlashcardSchema = z.object({
+  id: z.string().uuid('Invalid flashcard ID'),
+  front_text: z
+    .string()
+    .min(1, 'Front text is required')
+    .max(VALIDATION_CONSTANTS.FLASHCARD_TEXT_MAX_LENGTH, `Front text must not exceed ${VALIDATION_CONSTANTS.FLASHCARD_TEXT_MAX_LENGTH} characters`)
+    .optional(),
+  back_text: z
+    .string()
+    .min(1, 'Back text is required')
+    .max(VALIDATION_CONSTANTS.FLASHCARD_TEXT_MAX_LENGTH, `Back text must not exceed ${VALIDATION_CONSTANTS.FLASHCARD_TEXT_MAX_LENGTH} characters`)
+    .optional(),
+})
+
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const body = await request.json()
@@ -91,5 +105,47 @@ export const GET: APIRoute = async ({ request, locals }) => {
         headers: { 'Content-Type': 'application/json' },
       }
     );
+  }
+}
+
+export const PATCH: APIRoute = async ({ request, locals }) => {
+  try {
+    const body = await request.json()
+    const validationResult = updateFlashcardSchema.safeParse(body)
+
+    if (!validationResult.success) {
+      return new Response(JSON.stringify({ error: validationResult.error }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+
+    const { id, ...updateData } = validationResult.data
+    const service = generationsService(locals.supabase)
+
+    const updatedFlashcard = await service.updateFlashcard(id, updateData)
+
+    if (!updatedFlashcard) {
+      return new Response(JSON.stringify({ error: 'Flashcard not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+
+    return new Response(JSON.stringify(updatedFlashcard), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  } catch (error) {
+    console.error('Error updating flashcard:', error)
+    return new Response(
+      JSON.stringify({
+        error: error instanceof Error ? error.message : 'Unknown error occurred while updating flashcard',
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    )
   }
 }

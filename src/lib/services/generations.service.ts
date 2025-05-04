@@ -188,6 +188,38 @@ export class GenerationsService {
       throw error;
     }
   }
+
+  async updateFlashcard(
+    id: string,
+    updates: { front_text?: string; back_text?: string }
+  ): Promise<FlashcardResponseDTO | null> {
+    try {
+      const { data: { user } } = await this.supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await this.supabase
+        .from('flashcards')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      await this.errorLogger.logError({
+        error_code: 'FLASHCARD_UPDATE_ERROR',
+        error_message: error instanceof Error ? error.message : 'Unknown error',
+        flashcard_id: id,
+        stack_trace: error instanceof Error ? error.stack : undefined,
+      });
+      throw error;
+    }
+  }
 }
 
 export const generationsService = (supabase: SupabaseClient<Database>) => new GenerationsService(supabase)
