@@ -19,7 +19,15 @@ export interface OpenRouterChatRequest {
   model?: string;
   temperature?: number;
   max_tokens?: number;
-  response_format?: { type: string; schema?: object };
+  response_format?: { 
+    type: string; 
+    schema?: object;
+    json_schema?: {
+      name?: string;
+      strict?: boolean;
+      schema: object;
+    }
+  };
   stream?: boolean;
 }
 
