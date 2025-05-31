@@ -1,13 +1,11 @@
-import { VALIDATION_CONSTANTS } from '../types';
-import type { CreateFlashcardDTO } from '@/types'
-
-
+import { VALIDATION_CONSTANTS } from "../types";
+import type { CreateFlashcardDTO } from "@/types";
 
 /**
  * Interface representing a message in the OpenRouter chat format
  */
 export interface OpenRouterMessage {
-  role: 'system' | 'user' | 'assistant';
+  role: "system" | "user" | "assistant";
   content: string;
 }
 
@@ -19,14 +17,14 @@ export interface OpenRouterChatRequest {
   model?: string;
   temperature?: number;
   max_tokens?: number;
-  response_format?: { 
-    type: string; 
+  response_format?: {
+    type: string;
     schema?: object;
     json_schema?: {
       name?: string;
       strict?: boolean;
       schema: object;
-    }
+    };
   };
   stream?: boolean;
 }
@@ -37,13 +35,13 @@ export interface OpenRouterChatRequest {
 export interface OpenRouterChatResponse<T = unknown> {
   id: string;
   model: string;
-  choices: Array<{
+  choices: {
     message: {
       role: string;
       content: T;
     };
     finish_reason: string;
-  }>;
+  }[];
 }
 
 /**
@@ -52,13 +50,13 @@ export interface OpenRouterChatResponse<T = unknown> {
 export interface OpenRouterChatStreamChunk<T = unknown> {
   id: string;
   model: string;
-  choices: Array<{
+  choices: {
     delta: {
       role?: string;
       content?: T;
     };
     finish_reason: string | null;
-  }>;
+  }[];
 }
 
 /**
@@ -94,14 +92,14 @@ export class OpenRouterService {
 
   constructor(
     private readonly apiKey: string,
-    private readonly defaultModel: string = 'openai/gpt-4',
-    private readonly defaultTemperature: number = 0.7,
-    private readonly defaultMaxTokens: number = 1024,
-    private readonly baseUrl: string = 'https://openrouter.ai/api/v1',
+    private readonly defaultModel = "openai/gpt-4",
+    private readonly defaultTemperature = 0.7,
+    private readonly defaultMaxTokens = 1024,
+    private readonly baseUrl = "https://openrouter.ai/api/v1",
     private readonly options: OpenRouterRequestOptions = {}
   ) {
     if (!apiKey) {
-      throw new Error('OpenRouter API key is required');
+      throw new Error("OpenRouter API key is required");
     }
   }
 
@@ -121,54 +119,43 @@ export class OpenRouterService {
   private async enforceRateLimit(): Promise<void> {
     const now = Date.now();
     const timeSinceLastRequest = now - this.lastRequestTime;
-    
+
     if (timeSinceLastRequest < this.minRequestInterval) {
-      await new Promise(resolve => 
-        setTimeout(resolve, this.minRequestInterval - timeSinceLastRequest)
-      );
+      await new Promise((resolve) => setTimeout(resolve, this.minRequestInterval - timeSinceLastRequest));
     }
-    
+
     this.lastRequestTime = Date.now();
   }
 
   /**
    * Execute a fetch request with timeout
    */
-  private async fetchWithTimeout(
-    url: string,
-    options: RequestInit & { timeout?: number }
-  ): Promise<Response> {
+  private async fetchWithTimeout(url: string, options: RequestInit & { timeout?: number }): Promise<Response> {
     const { timeout = this.defaultTimeout, ...fetchOptions } = options;
 
-    this.debug('Sending request', { url, ...fetchOptions });
+    this.debug("Sending request", { url, ...fetchOptions });
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
-      controller.abort('Request timeout');
+      controller.abort("Request timeout");
     }, timeout);
 
     try {
       const response = await fetch(url, {
         ...fetchOptions,
-        signal: options.signal 
-          ? this.combineSignals(options.signal, controller.signal)
-          : controller.signal
+        signal: options.signal ? this.combineSignals(options.signal, controller.signal) : controller.signal,
       });
 
-      this.debug('Received response', {
+      this.debug("Received response", {
         status: response.status,
-        statusText: response.statusText
+        statusText: response.statusText,
       });
 
       return response;
     } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
+      if (error instanceof Error && error.name === "AbortError") {
         const isTimeout = controller.signal.aborted && !options.signal?.aborted;
-        throw new OpenRouterError(
-          isTimeout ? 'Request timed out' : 'Request was cancelled',
-          408,
-          error
-        );
+        throw new OpenRouterError(isTimeout ? "Request timed out" : "Request was cancelled", 408, error);
       }
       throw error;
     } finally {
@@ -181,18 +168,22 @@ export class OpenRouterService {
    */
   private combineSignals(...signals: AbortSignal[]): AbortSignal {
     const controller = new AbortController();
-    
+
     for (const signal of signals) {
       if (signal.aborted) {
         controller.abort(signal.reason);
         break;
       }
-      
-      signal.addEventListener('abort', () => {
-        controller.abort(signal.reason);
-      }, { once: true });
+
+      signal.addEventListener(
+        "abort",
+        () => {
+          controller.abort(signal.reason);
+        },
+        { once: true }
+      );
     }
-    
+
     return controller.signal;
   }
 
@@ -200,21 +191,14 @@ export class OpenRouterService {
    * Executes a function with retry logic for transient errors
    * @private
    */
-  private async withRetry<T>(
-    operation: () => Promise<T>,
-    retryCount = 0
-  ): Promise<T> {
+  private async withRetry<T>(operation: () => Promise<T>, retryCount = 0): Promise<T> {
     try {
       await this.enforceRateLimit();
       return await operation();
     } catch (error) {
-      if (
-        error instanceof OpenRouterError &&
-        error.status >= 500 &&
-        retryCount < this.maxRetries
-      ) {
+      if (error instanceof OpenRouterError && error.status >= 500 && retryCount < this.maxRetries) {
         const delay = this.retryDelay * Math.pow(2, retryCount);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
         return this.withRetry(operation, retryCount + 1);
       }
       throw error;
@@ -234,55 +218,46 @@ export class OpenRouterService {
     temperature = this.defaultTemperature,
     max_tokens = this.defaultMaxTokens,
     response_format,
-    stream = false
+    stream = false,
   }: OpenRouterChatRequest): Promise<OpenRouterChatResponse<T>> {
     if (!messages?.length) {
-      throw new Error('Messages array is required and cannot be empty');
+      throw new Error("Messages array is required and cannot be empty");
     }
 
-    this.debug('Starting chat request', { model, temperature, max_tokens });
+    this.debug("Starting chat request", { model, temperature, max_tokens });
 
     try {
-      const response = await this.fetchWithTimeout(
-        `${this.baseUrl}/chat/completions`,
-        {
-          method: 'POST',
-          headers: this.buildHeaders(),
-          body: JSON.stringify(this.buildRequestBody({
+      const response = await this.fetchWithTimeout(`${this.baseUrl}/chat/completions`, {
+        method: "POST",
+        headers: this.buildHeaders(),
+        body: JSON.stringify(
+          this.buildRequestBody({
             messages,
             model,
             temperature,
             max_tokens,
             response_format,
-            stream
-          })),
-          timeout: this.options.timeout,
-          signal: this.options.signal
-        }
-      );
+            stream,
+          })
+        ),
+        timeout: this.options.timeout,
+        signal: this.options.signal,
+      });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-        throw new OpenRouterError(
-          `API request failed with status ${response.status}`,
-          response.status,
-          error
-        );
+        const error = await response.json().catch(() => ({ error: "Unknown error" }));
+        throw new OpenRouterError(`API request failed with status ${response.status}`, response.status, error);
       }
 
       const data = await response.json();
-      this.debug('Received chat response', data);
+      this.debug("Received chat response", data);
       return data as OpenRouterChatResponse<T>;
     } catch (error) {
-      this.debug('Chat request failed', error);
+      this.debug("Chat request failed", error);
       if (error instanceof OpenRouterError) {
         throw error;
       }
-      throw new OpenRouterError(
-        'Failed to communicate with OpenRouter API',
-        500,
-        error
-      );
+      throw new OpenRouterError("Failed to communicate with OpenRouter API", 500, error);
     }
   }
 
@@ -298,44 +273,39 @@ export class OpenRouterService {
     model = this.defaultModel,
     temperature = this.defaultTemperature,
     max_tokens = this.defaultMaxTokens,
-    response_format
+    response_format,
   }: OpenRouterChatRequest): AsyncGenerator<OpenRouterChatStreamChunk<T>> {
     if (!messages?.length) {
-      throw new Error('Messages array is required and cannot be empty');
+      throw new Error("Messages array is required and cannot be empty");
     }
 
-    this.debug('Starting stream chat request', { model, temperature, max_tokens });
+    this.debug("Starting stream chat request", { model, temperature, max_tokens });
 
     try {
-      const response = await this.fetchWithTimeout(
-        `${this.baseUrl}/chat/completions`,
-        {
-          method: 'POST',
-          headers: this.buildHeaders(),
-          body: JSON.stringify(this.buildRequestBody({
+      const response = await this.fetchWithTimeout(`${this.baseUrl}/chat/completions`, {
+        method: "POST",
+        headers: this.buildHeaders(),
+        body: JSON.stringify(
+          this.buildRequestBody({
             messages,
             model,
             temperature,
             max_tokens,
             response_format,
-            stream: true
-          })),
-          timeout: this.options.timeout,
-          signal: this.options.signal
-        }
-      );
+            stream: true,
+          })
+        ),
+        timeout: this.options.timeout,
+        signal: this.options.signal,
+      });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-        throw new OpenRouterError(
-          `API request failed with status ${response.status}`,
-          response.status,
-          error
-        );
+        const error = await response.json().catch(() => ({ error: "Unknown error" }));
+        throw new OpenRouterError(`API request failed with status ${response.status}`, response.status, error);
       }
 
       if (!response.body) {
-        throw new OpenRouterError('Response body is null', 500);
+        throw new OpenRouterError("Response body is null", 500);
       }
 
       const reader = response.body.getReader();
@@ -348,19 +318,19 @@ export class OpenRouterService {
 
           const chunk = decoder.decode(value);
           const lines = chunk
-            .split('\n')
-            .filter(line => line.trim())
-            .filter(line => line.startsWith('data: '))
-            .map(line => line.slice(6));
+            .split("\n")
+            .filter((line) => line.trim())
+            .filter((line) => line.startsWith("data: "))
+            .map((line) => line.slice(6));
 
           for (const line of lines) {
-            if (line === '[DONE]') return;
+            if (line === "[DONE]") return;
             try {
               const parsed = JSON.parse(line);
-              this.debug('Received stream chunk', parsed);
+              this.debug("Received stream chunk", parsed);
               yield parsed as OpenRouterChatStreamChunk<T>;
             } catch (e) {
-              this.debug('Failed to parse stream chunk', e);
+              this.debug("Failed to parse stream chunk", e);
             }
           }
         }
@@ -368,15 +338,11 @@ export class OpenRouterService {
         reader.releaseLock();
       }
     } catch (error) {
-      this.debug('Stream chat request failed', error);
+      this.debug("Stream chat request failed", error);
       if (error instanceof OpenRouterError) {
         throw error;
       }
-      throw new OpenRouterError(
-        'Failed to communicate with OpenRouter API',
-        500,
-        error
-      );
+      throw new OpenRouterError("Failed to communicate with OpenRouter API", 500, error);
     }
   }
 
@@ -385,20 +351,18 @@ export class OpenRouterService {
    */
   async generateFlashcards({
     sourceText,
-    model = this.defaultModel
+    model = this.defaultModel,
   }: FlashcardGenerationPrompt): Promise<CreateFlashcardDTO[]> {
     if (!sourceText) {
-      throw new Error('Source text is required');
+      throw new Error("Source text is required");
     }
 
     if (sourceText.length < VALIDATION_CONSTANTS.SOURCE_TEXT_MIN_LENGTH) {
-      throw new Error(
-        `Source text must be at least ${VALIDATION_CONSTANTS.SOURCE_TEXT_MIN_LENGTH} characters long`
-      );
+      throw new Error(`Source text must be at least ${VALIDATION_CONSTANTS.SOURCE_TEXT_MIN_LENGTH} characters long`);
     }
 
     const systemPrompt = {
-      role: 'system' as const,
+      role: "system" as const,
       content: `You are an expert at creating educational flashcards. Create flashcards from the provided text.
 Each flashcard should follow these rules:
 1. Front should contain a clear, concise question or concept
@@ -407,12 +371,12 @@ Each flashcard should follow these rules:
 4. Use clear, simple language
 5. Avoid overly complex or compound cards
 6. Focus on key concepts and important details
-7. Each side must not exceed ${VALIDATION_CONSTANTS.FLASHCARD_TEXT_MAX_LENGTH} characters`
+7. Each side must not exceed ${VALIDATION_CONSTANTS.FLASHCARD_TEXT_MAX_LENGTH} characters`,
     };
 
     const userPrompt = {
-      role: 'user' as const,
-      content: sourceText
+      role: "user" as const,
+      content: sourceText,
     };
 
     const response = await this.chat<CreateFlashcardDTO[]>({
@@ -420,26 +384,26 @@ Each flashcard should follow these rules:
       model,
       temperature: 0.7,
       response_format: {
-        type: 'json_object',
+        type: "json_object",
         schema: {
-          type: 'array',
+          type: "array",
           items: {
-            type: 'object',
+            type: "object",
             properties: {
-              front_text: { 
-                type: 'string',
-                maxLength: VALIDATION_CONSTANTS.FLASHCARD_TEXT_MAX_LENGTH
+              front_text: {
+                type: "string",
+                maxLength: VALIDATION_CONSTANTS.FLASHCARD_TEXT_MAX_LENGTH,
               },
-              back_text: { 
-                type: 'string',
-                maxLength: VALIDATION_CONSTANTS.FLASHCARD_TEXT_MAX_LENGTH
+              back_text: {
+                type: "string",
+                maxLength: VALIDATION_CONSTANTS.FLASHCARD_TEXT_MAX_LENGTH,
               },
-              creation: { type: 'string', enum: ['ai'] }
+              creation: { type: "string", enum: ["ai"] },
             },
-            required: ['front_text', 'back_text', 'creation']
-          }
-        }
-      }
+            required: ["front_text", "back_text", "creation"],
+          },
+        },
+      },
     });
 
     const flashcards = response.choices[0].message.content;
@@ -461,20 +425,20 @@ Each flashcard should follow these rules:
 
   private buildHeaders(): Record<string, string> {
     return {
-      'Authorization': `Bearer ${this.apiKey}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://10x.cards',
-      'X-Title': '10x Cards'
+      Authorization: `Bearer ${this.apiKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://10x.cards",
+      "X-Title": "10x Cards",
     };
   }
 
-  private buildRequestBody<T>({
+  private buildRequestBody({
     messages,
     model,
     temperature,
     max_tokens,
     response_format,
-    stream
+    stream,
   }: OpenRouterChatRequest): Record<string, unknown> {
     return {
       messages,
@@ -482,7 +446,7 @@ Each flashcard should follow these rules:
       temperature,
       max_tokens,
       response_format,
-      stream
+      stream,
     };
   }
 }
@@ -497,6 +461,6 @@ export class OpenRouterError extends Error {
     public readonly originalError?: unknown
   ) {
     super(message);
-    this.name = 'OpenRouterError';
+    this.name = "OpenRouterError";
   }
 }

@@ -1,21 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import type { FlashcardResponseDTO, FlashcardListResponseDTO } from '@/types';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { PencilIcon, CheckIcon, XIcon } from 'lucide-react';
-import { toast } from 'sonner';
-import FlashcardPreview from '../generator/FlashcardPreview';
+import React, { useEffect, useState, useCallback } from "react";
+import type { FlashcardResponseDTO, FlashcardListResponseDTO } from "@/types";
+import { Button } from "@/components/ui/button";
+import { PencilIcon, CheckIcon, XIcon } from "lucide-react";
+import { toast } from "sonner";
+import FlashcardPreview from "../generator/FlashcardPreview";
 
 interface FlashcardListProps {
   initialPage?: number;
   initialLimit?: number;
 }
 
-const FlashcardList: React.FC<FlashcardListProps> = ({
-  initialPage = 1,
-  initialLimit = 10,
-}) => {
+const FlashcardList: React.FC<FlashcardListProps> = ({ initialPage = 1, initialLimit = 10 }) => {
   const [flashcards, setFlashcards] = useState<FlashcardResponseDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,33 +19,31 @@ const FlashcardList: React.FC<FlashcardListProps> = ({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedValues, setEditedValues] = useState<{ front_text?: string; back_text?: string }>({});
 
-  const fetchFlashcards = async () => {
+  const fetchFlashcards = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
         page: page.toString(),
         limit: initialLimit.toString(),
-        sortBy: 'created_at',
-        sortOrder: 'desc',
+        sortBy: "created_at",
+        sortOrder: "desc",
       });
 
       const response = await fetch(`/api/flashcards?${params}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch flashcards');
+        throw new Error("Failed to fetch flashcards");
       }
 
       const data: FlashcardListResponseDTO = await response.json();
-      setFlashcards(prevFlashcards => 
-        page === 1 ? data.items : [...prevFlashcards, ...data.items]
-      );
+      setFlashcards((prevFlashcards) => (page === 1 ? data.items : [...prevFlashcards, ...data.items]));
       setHasMore(data.has_more);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, initialLimit]);
 
   const handleEdit = (id: string) => {
     setEditingId(id);
@@ -69,10 +62,10 @@ const FlashcardList: React.FC<FlashcardListProps> = ({
     }
 
     try {
-      const response = await fetch('/api/flashcards', {
-        method: 'PATCH',
+      const response = await fetch("/api/flashcards", {
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           id,
@@ -81,37 +74,35 @@ const FlashcardList: React.FC<FlashcardListProps> = ({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update flashcard');
+        throw new Error("Failed to update flashcard");
       }
 
       const updatedFlashcard = await response.json();
-      setFlashcards(prevFlashcards =>
-        prevFlashcards.map(card =>
-          card.id === id ? { ...card, ...updatedFlashcard } : card
-        )
+      setFlashcards((prevFlashcards) =>
+        prevFlashcards.map((card) => (card.id === id ? { ...card, ...updatedFlashcard } : card))
       );
-      toast.success('Flashcard updated successfully');
+      toast.success("Flashcard updated successfully");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to update flashcard');
+      toast.error(err instanceof Error ? err.message : "Failed to update flashcard");
     } finally {
       handleCancelEdit();
     }
   };
 
-  const handleFieldEdit = (field: 'front' | 'back', value: string) => {
-    setEditedValues(prev => ({
+  const handleFieldEdit = (field: "front" | "back", value: string) => {
+    setEditedValues((prev) => ({
       ...prev,
       [`${field}_text`]: value,
     }));
   };
 
   const loadMore = () => {
-    setPage(prev => prev + 1);
+    setPage((prev) => prev + 1);
   };
 
   useEffect(() => {
     fetchFlashcards();
-  }, [page]);
+  }, [fetchFlashcards]);
 
   return (
     <div className="space-y-4">
@@ -122,7 +113,7 @@ const FlashcardList: React.FC<FlashcardListProps> = ({
       )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {flashcards.map(flashcard => (
+        {flashcards.map((flashcard) => (
           <div key={flashcard.id} className="relative">
             <FlashcardPreview
               frontText={flashcard.front_text}

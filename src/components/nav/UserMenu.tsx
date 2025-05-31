@@ -1,12 +1,7 @@
-import React from 'react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
-import { Button } from '../ui/button';
-import { User } from 'lucide-react';
+import React from "react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { Button } from "../ui/button";
+import { User } from "lucide-react";
 
 interface UserMenuProps {
   email: string;
@@ -15,7 +10,7 @@ interface UserMenuProps {
 const UserMenu: React.FC<UserMenuProps> = ({ email }) => {
   const handleLogout = async () => {
     // Will be implemented later
-    console.log('Logout clicked');
+    console.log("Logout clicked");
   };
 
   return (

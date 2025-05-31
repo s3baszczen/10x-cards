@@ -1,17 +1,17 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Button } from '../ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
-import { Input } from '../ui/input';
-import { supabaseClient } from '../../db/supabase.client';
-import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Button } from "../ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
+import { Input } from "../ui/input";
+import { supabaseClient } from "../../db/supabase.client";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -27,43 +27,44 @@ const LoginForm: React.FC = () => {
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
     },
   });
 
   const onSubmit = async (data: LoginFormValues) => {
     try {
       setIsLoading(true);
-      console.log('🔑 Attempting login...');
+      console.log("🔑 Attempting login...");
       const { data: authData, error } = await supabaseClient.auth.signInWithPassword({
         email: data.email,
         password: data.password,
       });
 
       if (error) {
-        console.error('❌ Login error:', error);
-        toast.error('Login failed', {
-          description: error.message === 'Invalid login credentials'
-            ? 'Incorrect email or password'
-            : 'Login failed. Please try again',
+        console.error("❌ Login error:", error);
+        toast.error("Login failed", {
+          description:
+            error.message === "Invalid login credentials"
+              ? "Incorrect email or password"
+              : "Login failed. Please try again",
         });
         return;
       }
 
-      console.log('✅ Login response:', {
-        session: authData.session ? 'Present' : 'Missing',
-        user: authData.user ? 'Present' : 'Missing'
+      console.log("✅ Login response:", {
+        session: authData.session ? "Present" : "Missing",
+        user: authData.user ? "Present" : "Missing",
       });
 
       if (authData.session) {
         // Set session cookies manually to ensure they're available immediately
         const accessToken = authData.session.access_token;
         const refreshToken = authData.session.refresh_token;
-        
-        console.log('🔑 Setting auth cookies:', {
-          accessToken: accessToken ? `${accessToken.slice(0, 5)}...${accessToken.slice(-5)}` : 'Missing',
-          refreshToken: refreshToken ? `${refreshToken.slice(0, 5)}...${refreshToken.slice(-5)}` : 'Missing',
+
+        console.log("🔑 Setting auth cookies:", {
+          accessToken: accessToken ? `${accessToken.slice(0, 5)}...${accessToken.slice(-5)}` : "Missing",
+          refreshToken: refreshToken ? `${refreshToken.slice(0, 5)}...${refreshToken.slice(-5)}` : "Missing",
         });
 
         // Set cookies using the same names that Supabase client expects
@@ -77,24 +78,20 @@ const LoginForm: React.FC = () => {
         });
 
         // Get redirect path from cookie
-        const redirectCookie = document.cookie
-          .split('; ')
-          .find(c => c.trim().startsWith('redirectTo='));
-        const redirectPath = redirectCookie 
-          ? decodeURIComponent(redirectCookie.split('=')[1]) 
-          : '/flashcards';
+        const redirectCookie = document.cookie.split("; ").find((c) => c.trim().startsWith("redirectTo="));
+        const redirectPath = redirectCookie ? decodeURIComponent(redirectCookie.split("=")[1]) : "/flashcards";
 
-        console.log('🚀 Redirecting to:', redirectPath);
+        console.log("🚀 Redirecting to:", redirectPath);
         window.location.href = redirectPath;
       } else {
-        console.error('❌ No session in auth response');
-        toast.error('Login issue', {
+        console.error("❌ No session in auth response");
+        toast.error("Login issue", {
           description: "No session received. Please try again.",
         });
       }
     } catch (error) {
-      console.error('❌ Unexpected error:', error);
-      toast.error('Connection error', {
+      console.error("❌ Unexpected error:", error);
+      toast.error("Connection error", {
         description: "Connection problem. Please try again",
       });
     } finally {
@@ -117,12 +114,7 @@ const LoginForm: React.FC = () => {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input 
-                  placeholder="you@example.com" 
-                  type="email" 
-                  disabled={isLoading}
-                  {...field} 
-                />
+                <Input placeholder="you@example.com" type="email" disabled={isLoading} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -136,12 +128,7 @@ const LoginForm: React.FC = () => {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input 
-                  placeholder="••••••••" 
-                  type="password" 
-                  disabled={isLoading}
-                  {...field} 
-                />
+                <Input placeholder="••••••••" type="password" disabled={isLoading} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -155,7 +142,7 @@ const LoginForm: React.FC = () => {
               Logging in...
             </>
           ) : (
-            'Sign In'
+            "Sign In"
           )}
         </Button>
       </form>

@@ -1,6 +1,6 @@
-import React from 'react';
-import { Button } from '../ui/button';
-import UserMenu from './UserMenu';
+import React from "react";
+import { Button } from "../ui/button";
+import UserMenu from "./UserMenu";
 
 interface NavbarProps {
   isAuthenticated?: boolean;

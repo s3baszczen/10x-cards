@@ -1,22 +1,17 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
-import { VALIDATION_CONSTANTS } from '@/types';
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { VALIDATION_CONSTANTS } from "@/types";
 
 interface FlashcardPreviewProps {
   frontText: string;
   backText: string;
   isEditable?: boolean;
-  onEdit?: (field: 'front' | 'back', value: string) => void;
+  onEdit?: (field: "front" | "back", value: string) => void;
 }
 
-const FlashcardPreview: React.FC<FlashcardPreviewProps> = ({
-  frontText,
-  backText,
-  isEditable = false,
-  onEdit
-}) => {
+const FlashcardPreview: React.FC<FlashcardPreviewProps> = ({ frontText, backText, isEditable = false, onEdit }) => {
   const [frontValue, setFrontValue] = useState(frontText);
   const [backValue, setBackValue] = useState(backText);
   const [frontError, setFrontError] = useState<string | undefined>();
@@ -25,28 +20,28 @@ const FlashcardPreview: React.FC<FlashcardPreviewProps> = ({
   const handleFrontChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     setFrontValue(value);
-    
+
     if (value.length > VALIDATION_CONSTANTS.FLASHCARD_TEXT_MAX_LENGTH) {
       setFrontError(`Text must not exceed ${VALIDATION_CONSTANTS.FLASHCARD_TEXT_MAX_LENGTH} characters`);
     } else if (value.trim().length === 0) {
-      setFrontError('Front text cannot be empty');
+      setFrontError("Front text cannot be empty");
     } else {
       setFrontError(undefined);
-      onEdit?.('front', value);
+      onEdit?.("front", value);
     }
   };
 
   const handleBackChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     setBackValue(value);
-    
+
     if (value.length > VALIDATION_CONSTANTS.FLASHCARD_TEXT_MAX_LENGTH) {
       setBackError(`Text must not exceed ${VALIDATION_CONSTANTS.FLASHCARD_TEXT_MAX_LENGTH} characters`);
     } else if (value.trim().length === 0) {
-      setBackError('Back text cannot be empty');
+      setBackError("Back text cannot be empty");
     } else {
       setBackError(undefined);
-      onEdit?.('back', value);
+      onEdit?.("back", value);
     }
   };
 
@@ -81,12 +76,10 @@ const FlashcardPreview: React.FC<FlashcardPreviewProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="p-4 min-h-[100px] bg-muted rounded-md">
-                {frontText}
-              </div>
+              <div className="p-4 min-h-[100px] bg-muted rounded-md">{frontText}</div>
             )}
           </TabsContent>
-          
+
           <TabsContent value="back" className="mt-0">
             {isEditable ? (
               <div>
@@ -108,9 +101,7 @@ const FlashcardPreview: React.FC<FlashcardPreviewProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="p-4 min-h-[100px] bg-muted rounded-md">
-                {backText}
-              </div>
+              <div className="p-4 min-h-[100px] bg-muted rounded-md">{backText}</div>
             )}
           </TabsContent>
         </CardContent>

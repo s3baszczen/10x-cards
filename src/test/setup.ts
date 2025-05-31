@@ -1,7 +1,7 @@
-import '@testing-library/jest-dom/vitest';
-import { cleanup } from '@testing-library/react';
-import { afterAll, afterEach, beforeAll } from 'vitest';
-import { setupServer } from 'msw/node';
+import "@testing-library/jest-dom/vitest";
+import { cleanup } from "@testing-library/react";
+import { afterAll, afterEach, beforeAll } from "vitest";
+import { setupServer } from "msw/node";
 
 // Extend Vitest's expect with Testing Library's matchers
 expect.extend({});
@@ -11,7 +11,7 @@ export const server = setupServer();
 
 beforeAll(() => {
   // Start MSW server before all tests
-  server.listen({ onUnhandledRequest: 'error' });
+  server.listen({ onUnhandledRequest: "error" });
 });
 
 afterAll(() => {
