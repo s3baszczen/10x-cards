@@ -33,8 +33,8 @@ describe('GenerationStatus', () => {
     
     const progressBar = screen.getByLabelText('Generation progress');
     expect(progressBar).not.toHaveClass('animate-pulse');
-    expect(progressBar).toHaveAttribute('value', progressValue.toString());
-    expect(progressBar).toHaveAttribute('max', '100');
+    expect(progressBar).toHaveAttribute('aria-valuenow', progressValue.toString());
+    expect(progressBar).toHaveAttribute('aria-valuemax', '100');
   });
 
   it('includes a spinning indicator when generating', () => {

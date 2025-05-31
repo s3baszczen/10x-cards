@@ -36,6 +36,9 @@ const GenerationStatus: React.FC<GenerationStatusProps> = ({
               max={100}
               className={showIndeterminateProgress ? "animate-pulse" : ""}
               aria-label="Generation progress"
+              aria-valuemax={100}
+              aria-valuenow={showIndeterminateProgress ? undefined : progress}
+              aria-valuemin={0}
             />
           </div>
           
