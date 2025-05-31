@@ -31,7 +31,7 @@ const TextInputSection: React.FC<TextInputSectionProps> = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Enter Text for Flashcard Generation</CardTitle>
+        <CardTitle as="h2" role="heading">Enter Text for Flashcard Generation</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
