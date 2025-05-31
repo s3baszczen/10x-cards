@@ -1,0 +1,19 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import RegisterForm from "../../components/auth/RegisterForm";
+import AuthHeader from "../../components/auth/AuthHeader";
+---
+
+<Layout title="Register - 10x Cards">
+  <main class="container max-w-md mx-auto px-4 py-8">
+    <AuthHeader title="Create your account" client:load />
+    <div class="mt-8">
+      <RegisterForm client:load />
+    </div>
+    <div class="mt-6 text-center text-sm text-gray-600 dark:text-gray-300">
+      <a href="/auth/login" class="font-medium text-primary hover:text-primary/90">
+        Already have an account? Sign in
+      </a>
+    </div>
+  </main>
+</Layout>
